@@ -5,13 +5,15 @@
 #define size (512)
 int main(int argc , char *argv[]){
     if(argc == 1){
+
         return 0;
     }
     for(int i = 1 ; i < argc ;i++){
 
         FILE *fil = fopen(argv[i] , "r");
         if(fil == NULL){
-            printf("wcat: cannot open file");
+            printf("wcat: cannot open file\n");
+
             exit(1);
         }
 
@@ -20,10 +22,10 @@ int main(int argc , char *argv[]){
         while(fgets(buffer , size , fil) != NULL){
             printf("%s" , buffer);
         }
-        printf("\n");
 
         fclose(fil);
     }
+
     return 0;
 
 }

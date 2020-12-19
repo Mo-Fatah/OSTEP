@@ -1,3 +1,0 @@
-welcome 
-this a new test file
-bye
