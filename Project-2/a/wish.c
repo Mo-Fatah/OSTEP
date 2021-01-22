@@ -7,23 +7,27 @@
 #include <ctype.h>
 #define SIZE 512
 char *PATH[64];
+char error_message[30] = "An error has occurred\n";	
 
+//provide the command (cmd) and an array of args which start from index 0
 void exeC(char *cmd, char **args ){
 	
-	int rc = fork();
+	int rc = fork();	//create a child process that exectutes the command
 	if(rc == 0){
 		int j = 0;
 		char path[128];
+
+		//search for cmd in the Provided path to execute it
 		while(PATH[j] != NULL){
 			strcpy(path , PATH[j]);
 			int cmdIter = 0;
-			char ch = '/';
+			char ch = '/'; //append '/' to the end of the path
 			strncat(path , &ch , 1);
+
 			for(int i = strlen(path) ; i < strlen(cmd) +  strlen(path) ; i++){
 				path[i] = cmd[cmdIter];
 				cmdIter++;
 			}
-			
 		
 			if(args[0] == NULL){
 				char *ar[8] = {" " , NULL};
@@ -33,7 +37,8 @@ void exeC(char *cmd, char **args ){
 				execv(path, args);	
 			j++;
 		}
-		char error_message[30] = "An error has occurred\n";		
+		//if the child retruns that means an error in the execv() func.
+			
 		write(STDERR_FILENO, error_message, strlen(error_message)); 
 		return;
 	}
@@ -60,10 +65,15 @@ int main(int argc , char *argv[]){
 			counter++;	
 		}		
 		args[counter] = NULL;
-
-		//Checking for Exit command
-		if(strcmp(args[0] , "exit") == 0)
+		//BUILT-IN commands (path , cd , exit)
+		//Checking for exit command
+		if(strcmp(args[0] , "exit") == 0){
+			if(counter > 1){
+				write(STDERR_FILENO, error_message, strlen(error_message)); 
+				continue;
+			}
 			exit(0);
+		}
 
 		int i = 0;
 		//Checking for path command  
@@ -79,16 +89,33 @@ int main(int argc , char *argv[]){
 			continue; // Continue the loop take the next wish> command
 			
 		}
+		//check for cd command 
+		if(strcmp(args[0] , "cd") == 0){
+			if(counter > 2){
+				write(STDERR_FILENO, error_message, strlen(error_message)); 
+			}
+			else{
+				int r = chdir(args[1]); 
+				if(r != 0){write(STDERR_FILENO, error_message, strlen(error_message));}
+			}				
+			continue;
+		}
+
+
+
+
 		char cmd[32];
 		strcpy(cmd , args[0]);	
 		char *cmdArgs[128];
 		i = 1;
+		//copy the cmd args which start from args[0] into a cmdArgs[] to start from cmdArgs[0]
 		while(args[i] != NULL){
 			cmdArgs[i-1] = (char *)malloc(sizeof(char)*64);
 			strcpy(cmdArgs[i-1] , args[i]);
 			i++;
 		}
 		cmdArgs[i-1] = NULL;
+					
 		exeC(cmd , cmdArgs); 
 				
 	}
